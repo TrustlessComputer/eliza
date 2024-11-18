@@ -1,5 +1,6 @@
 import { getModel, getEndpoint } from '../models.ts';
 import { ModelProviderName, ModelClass } from '../types.ts';
+import settings from "../settings.ts";
 
 jest.mock('../settings', () => ({
   loadEnv: jest.fn(), // Mock the loadEnv function
@@ -8,6 +9,11 @@ jest.mock('../settings', () => ({
 describe('Model Provider Tests', () => {
   test('should retrieve the correct model for OpenAI SMALL', () => {
     const model = getModel(ModelProviderName.OPENAI, ModelClass.SMALL);
+    expect(model).toBe('gpt-4o-mini');
+  });
+
+  test('should retrieve the correct model for EternalAI SMALL', () => {
+    const model = getModel(ModelProviderName.ETERNALAI, ModelClass.SMALL);
     expect(model).toBe('gpt-4o-mini');
   });
 
@@ -24,6 +30,11 @@ describe('Model Provider Tests', () => {
   test('should retrieve the correct endpoint for OpenAI', () => {
     const endpoint = getEndpoint(ModelProviderName.OPENAI);
     expect(endpoint).toBe('https://api.openai.com/v1');
+  });
+
+  test('should retrieve the correct endpoint for EternalAI', () => {
+    const endpoint = getEndpoint(ModelProviderName.ETERNALAI);
+    expect(endpoint).toBe(settings.ETERNALAI_URL);
   });
 
   test('should retrieve the correct endpoint for Anthropic', () => {
