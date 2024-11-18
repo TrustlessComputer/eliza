@@ -104,6 +104,7 @@ export type Model = {
 
 export type Models = {
     [ModelProviderName.OPENAI]: Model;
+    [ModelProviderName.ETERNALAI]: Model;
     [ModelProviderName.ANTHROPIC]: Model;
     [ModelProviderName.GROK]: Model;
     [ModelProviderName.GROQ]: Model;
@@ -119,6 +120,7 @@ export type Models = {
 
 export enum ModelProviderName {
     OPENAI = "openai",
+    ETERNALAI = "eternalai",
     ANTHROPIC = "anthropic",
     GROK = "grok",
     GROQ = "groq",

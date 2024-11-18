@@ -20,6 +20,24 @@ export const models: Models = {
             [ModelClass.IMAGE]: "dall-e-3",
         },
     },
+    [ModelProviderName.ETERNALAI]: {
+        endpoint: settings.ETERNALAI_URL,
+        settings: {
+            stop: [],
+            maxInputTokens: 128000,
+            maxOutputTokens: 8192,
+            frequency_penalty: 0.0,
+            presence_penalty: 0.0,
+            temperature: 0.6,
+        },
+        model: {
+            [ModelClass.SMALL]: "gpt-4o-mini",
+            [ModelClass.MEDIUM]: "gpt-4o",
+            [ModelClass.LARGE]: "gpt-4o",
+            [ModelClass.EMBEDDING]: "text-embedding-3-small",
+            [ModelClass.IMAGE]: "dall-e-3",
+        },
+    },
     [ModelProviderName.ANTHROPIC]: {
         settings: {
             stop: [],
