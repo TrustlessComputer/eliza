@@ -4,7 +4,7 @@ RUN npm install -g pnpm@9.4.0
 
 # Set the working directory
 WORKDIR /app
-COPY . . 
+COPY client . 
 # Add configuration files and install dependencies
 # ADD pnpm-workspace.yaml /app/pnpm-workspace.yaml
 # ADD package.json /app/package.json
@@ -14,4 +14,4 @@ COPY . .
 WORKDIR /app/client
 RUN pnpm i
 
-CMD ["pnpm", "run", "dev"]
+CMD ["pnpm", "run", "dev", "-h", "eliza-web.eternalai.org"]
