@@ -19,7 +19,7 @@ function App() {
         setLoading(true);
 
         try {
-            const res = await fetch(`https://eliza-api.eternalai.org/${stringToUuid("Eliza")}/message`, {
+            const res = await fetch(`https://eliza-api.eternalai.org/${stringToUuid("TrollDetective.Exe")}/message`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
