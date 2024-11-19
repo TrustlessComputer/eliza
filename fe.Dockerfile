@@ -14,4 +14,4 @@ COPY . .
 WORKDIR /app/client
 RUN pnpm i
 
-CMD ["pnpm", "run", "dev", "-h", "eliza-web.eternalai.org"]
+CMD ["pnpm", "run", "dev", "--host", "eliza-web.eternalai.org"]
