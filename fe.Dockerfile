@@ -4,7 +4,7 @@ RUN npm install -g pnpm@9.4.0
 
 # Set the working directory
 WORKDIR /app
-COPY client/. . 
+COPY . . 
 # Add configuration files and install dependencies
 # ADD pnpm-workspace.yaml /app/pnpm-workspace.yaml
 # ADD package.json /app/package.json
