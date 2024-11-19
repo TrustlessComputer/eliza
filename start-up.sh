@@ -1,3 +1,3 @@
 printenv > .env
 
-pnpm start
+pnpm start --characters=/app/characters/eternalai.character.json
