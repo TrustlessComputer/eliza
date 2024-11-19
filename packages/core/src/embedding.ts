@@ -49,6 +49,7 @@ async function getRemoteEmbedding(
     };
 
     try {
+        // console.info("fullUrl", fullUrl)
         const response = await fetch(fullUrl, requestOptions);
 
         if (!response.ok) {

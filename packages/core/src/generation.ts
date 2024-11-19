@@ -107,6 +107,7 @@ export async function generateText({
             case ModelProviderName.ETERNALAI:
             case ModelProviderName.LLAMACLOUD: {
                 elizaLogger.debug("Initializing OpenAI model.");
+                elizaLogger.debug("----------------------------- endpoint ", endpoint)
                 const openai = createOpenAI({ apiKey, baseURL: endpoint });
 
                 const { text: openaiResponse } = await aiGenerateText({

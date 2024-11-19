@@ -31,11 +31,11 @@ export const models: Models = {
             temperature: 0.6,
         },
         model: {
-            [ModelClass.SMALL]: "gpt-4o-mini",
-            [ModelClass.MEDIUM]: "gpt-4o",
-            [ModelClass.LARGE]: "gpt-4o",
-            [ModelClass.EMBEDDING]: "text-embedding-3-small",
-            [ModelClass.IMAGE]: "dall-e-3",
+            [ModelClass.SMALL]: "neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16",
+            [ModelClass.MEDIUM]: "neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16",
+            [ModelClass.LARGE]: "neuralmagic/Meta-Llama-3.1-405B-Instruct-quantized.w4a16",
+            [ModelClass.EMBEDDING]: "",
+            [ModelClass.IMAGE]: "",
         },
     },
     [ModelProviderName.ANTHROPIC]: {
