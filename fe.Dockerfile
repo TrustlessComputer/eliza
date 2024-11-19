@@ -11,6 +11,7 @@ COPY client/. .
 # ADD .npmrc /app/.npmrc
 # ADD tsconfig.json /app/tsconfig.json
 # ADD pnpm-lock.yaml /app/pnpm-lock.yaml
+WORKDIR /app/client
 RUN pnpm i
 
 # Add the documentation
