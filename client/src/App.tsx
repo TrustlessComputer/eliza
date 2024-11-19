@@ -19,7 +19,7 @@ function App() {
         setLoading(true);
 
         try {
-            const res = await fetch(`/api/${stringToUuid("Eliza")}/message`, {
+            const res = await fetch(`https://eliza-api.eternalai.org/${stringToUuid("Eliza")}/message`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
