@@ -1,0 +1,3 @@
+printenv > .env
+
+pnpm start

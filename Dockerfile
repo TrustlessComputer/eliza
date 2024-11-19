@@ -27,4 +27,7 @@ RUN pnpm build
 # ADD .env /app/.env
 
 # Command to run the container
-CMD ["pnpm", "start"]
+# CMD ["pnpm", "start"]
+RUN chmod +x start-up.sh
+
+CMD ["./start-up.sh"]
