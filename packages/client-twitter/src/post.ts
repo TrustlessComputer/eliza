@@ -1,6 +1,6 @@
 import { Tweet } from "agent-twitter-client";
 import fs from "fs";
-import { composeContext } from "@ai16z/eliza";
+import {composeContext, parseBooleanFromText} from "@ai16z/eliza";
 import { generateText } from "@ai16z/eliza";
 import { embeddingZeroVector } from "@ai16z/eliza";
 import { IAgentRuntime, ModelClass } from "@ai16z/eliza";
@@ -46,7 +46,10 @@ export class TwitterPostClient extends ClientBase {
 
             console.log(`Next tweet scheduled in ${randomMinutes} minutes`);
         };
-
+        if (this.runtime.getSetting("POST_IMMEDIATELY") != null && this.runtime.getSetting("POST_IMMEDIATELY") != "") {
+            postImmediately = parseBooleanFromText(this.runtime.getSetting("POST_IMMEDIATELY"))
+        }
+        console.info("----------- check postImmediately: ", postImmediately)
         if (postImmediately) {
             this.generateNewTweet();
         }
