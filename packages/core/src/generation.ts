@@ -52,6 +52,8 @@ import {
 } from "./types.ts";
 import { fal } from "@fal-ai/client";
 import { tavily } from "@tavily/core";
+import { ethers } from 'ethers';
+import BigNumber from "bignumber.js";
 
 type Tool = CoreTool<any, any>;
 type StepResult = AIStepResult<any>;
@@ -485,10 +487,28 @@ export async function generateText({
                     },
                 });
 
+                let system_prompt = runtime.character.system ?? settings.SYSTEM_PROMPT ?? undefined;
+                const agentId = runtime.getSetting("ETERNALAI_AGENT_ID")
+                const providerUrl = runtime.getSetting("ETERNALAI_RPC_URL");
+                const contractAddress = runtime.getSetting("ETERNALAI_AGENT_CONTRACT_ADDRESS");
+                if (agentId && providerUrl && contractAddress) {
+                    // get onchain system-prompt
+                    const contractABI = [{"inputs": [{"internalType": "uint256", "name": "_agentId", "type": "uint256"}], "name": "getAgentSystemPrompt", "outputs": [{"internalType": "bytes[]", "name": "","type": "bytes[]"}], "stateMutability": "view", "type": "function"}];
+                    const provider = new ethers.JsonRpcProvider(providerUrl);
+                    const contract = new ethers.Contract(contractAddress, contractABI, provider);
+                    try {
+                        const result = await contract.getAgentSystemPrompt(new BigNumber(agentId));
+                        elizaLogger.info('onchain system-prompt', result.toString());
+                        system_prompt = result.toString();
+                    } catch (error) {
+                        elizaLogger.error('err', error);
+                    }
+                }
+
                 const { text: openaiResponse } = await aiGenerateText({
                     model: openai.languageModel(model),
                     prompt: context,
-                    system: runtime.character.system ?? settings.SYSTEM_PROMPT ?? undefined,
+                    system: system_prompt,
                     temperature: temperature,
                     maxTokens: max_response_length,
                     frequencyPenalty: frequency_penalty,
