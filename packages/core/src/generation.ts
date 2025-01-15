@@ -166,6 +166,51 @@ async function truncateTiktoken(
     }
 }
 
+async function getOnChainEternalAISystemPrompt(runtime: IAgentRuntime): Promise<string> | undefined {
+    const agentId = runtime.getSetting("ETERNALAI_AGENT_ID")
+    const providerUrl = runtime.getSetting("ETERNALAI_RPC_URL");
+    const contractAddress = runtime.getSetting("ETERNALAI_AGENT_CONTRACT_ADDRESS");
+    if (agentId && providerUrl && contractAddress) {
+        // get on-chain system-prompt
+        const contractABI = [{"inputs": [{"internalType": "uint256", "name": "_agentId", "type": "uint256"}], "name": "getAgentSystemPrompt", "outputs": [{"internalType": "bytes[]", "name": "","type": "bytes[]"}], "stateMutability": "view", "type": "function"}];
+        const provider = new ethers.JsonRpcProvider(providerUrl);
+        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        try {
+            const result = await contract.getAgentSystemPrompt(new BigNumber(agentId));
+            elizaLogger.info('on-chain system-prompt', result.toString());
+            return await fetchEternalAISystemPrompt(runtime, result.toString())
+        } catch (error) {
+            elizaLogger.error('err', error);
+        }
+    }
+    return undefined;
+}
+
+async function fetchEternalAISystemPrompt(runtime: IAgentRuntime, content: string): Promise<string> | undefined {
+    const IPFS = "ipfs//"
+    const containsSubstring: boolean = content.includes(IPFS);
+    if (containsSubstring) {
+        const lightHouse = content.replace(IPFS, "https://gateway.lighthouse.storage/ipfs/")
+        const responseLH = await fetch(lightHouse);
+        if (responseLH.ok) {
+            const data = await responseLH.text();
+            return data;
+        } else {
+            const gcs = content.replace(IPFS, "https://cdn.eternalai.org/upload/")
+            const responseGCS = await fetch(gcs);
+            if (responseGCS.ok) {
+                const data = await responseGCS.text();
+                return data;
+            } else {
+                throw new Error("invalid on-chain system prompt")
+            }
+            return undefined
+        }
+    } else {
+        return content;
+    }
+}
+
 /**
  * Gets the Cloudflare Gateway base URL for a specific provider if enabled
  * @param runtime The runtime environment
@@ -488,21 +533,13 @@ export async function generateText({
                 });
 
                 let system_prompt = runtime.character.system ?? settings.SYSTEM_PROMPT ?? undefined;
-                const agentId = runtime.getSetting("ETERNALAI_AGENT_ID")
-                const providerUrl = runtime.getSetting("ETERNALAI_RPC_URL");
-                const contractAddress = runtime.getSetting("ETERNALAI_AGENT_CONTRACT_ADDRESS");
-                if (agentId && providerUrl && contractAddress) {
-                    // get onchain system-prompt
-                    const contractABI = [{"inputs": [{"internalType": "uint256", "name": "_agentId", "type": "uint256"}], "name": "getAgentSystemPrompt", "outputs": [{"internalType": "bytes[]", "name": "","type": "bytes[]"}], "stateMutability": "view", "type": "function"}];
-                    const provider = new ethers.JsonRpcProvider(providerUrl);
-                    const contract = new ethers.Contract(contractAddress, contractABI, provider);
-                    try {
-                        const result = await contract.getAgentSystemPrompt(new BigNumber(agentId));
-                        elizaLogger.info('onchain system-prompt', result.toString());
-                        system_prompt = result.toString();
-                    } catch (error) {
-                        elizaLogger.error('err', error);
+                try {
+                    const on_chain_system_prompt = await getOnChainEternalAISystemPrompt(runtime);
+                    if (!on_chain_system_prompt) {
+                        system_prompt = on_chain_system_prompt
                     }
+                } catch (e) {
+                    elizaLogger.error(e)
                 }
 
                 const { text: openaiResponse } = await aiGenerateText({
