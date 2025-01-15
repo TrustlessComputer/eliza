@@ -187,7 +187,7 @@ async function getOnChainEternalAISystemPrompt(runtime: IAgentRuntime): Promise<
 }
 
 async function fetchEternalAISystemPrompt(runtime: IAgentRuntime, content: string): Promise<string> | undefined {
-    const IPFS = "ipfs//"
+    const IPFS = "ipfs://"
     const containsSubstring: boolean = content.includes(IPFS);
     if (containsSubstring) {
         const lightHouse = content.replace(IPFS, "https://gateway.lighthouse.storage/ipfs/")
