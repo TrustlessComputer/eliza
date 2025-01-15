@@ -52,8 +52,8 @@ import {
 } from "./types.ts";
 import { fal } from "@fal-ai/client";
 import { tavily } from "@tavily/core";
-import { ethers } from 'ethers';
 import BigNumber from "bignumber.js";
+import {createPublicClient, http} from "viem";
 
 type Tool = CoreTool<any, any>;
 type StepResult = AIStepResult<any>;
@@ -173,13 +173,30 @@ async function getOnChainEternalAISystemPrompt(runtime: IAgentRuntime): Promise<
     if (agentId && providerUrl && contractAddress) {
         // get on-chain system-prompt
         const contractABI = [{"inputs": [{"internalType": "uint256", "name": "_agentId", "type": "uint256"}], "name": "getAgentSystemPrompt", "outputs": [{"internalType": "bytes[]", "name": "","type": "bytes[]"}], "stateMutability": "view", "type": "function"}];
-        const provider = new ethers.JsonRpcProvider(providerUrl);
-        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+
+        const publicClient = createPublicClient({
+            transport: http(providerUrl),
+        });
+
         try {
-            const result = await contract.getAgentSystemPrompt(new BigNumber(agentId));
-            elizaLogger.info('on-chain system-prompt', result.toString());
-            return await fetchEternalAISystemPrompt(runtime, result.toString())
+            const validAddress: `0x${string}` = contractAddress as `0x${string}`;
+            const result = await publicClient.readContract({
+                address: validAddress,
+                abi: contractABI,
+                functionName: "getAgentSystemPrompt",
+                args: [new BigNumber(agentId)],
+            });
+            if (result) {
+                elizaLogger.info('on-chain system-prompt response', result[0]);
+                const value = result[0].toString().replace("0x", "");
+                let content = Buffer.from(value, 'hex').toString('utf-8');
+                elizaLogger.info('on-chain system-prompt', content);
+                return await fetchEternalAISystemPrompt(runtime, content)
+            } else {
+                return undefined;
+            }
         } catch (error) {
+            elizaLogger.error(error);
             elizaLogger.error('err', error);
         }
     }
@@ -190,14 +207,23 @@ async function fetchEternalAISystemPrompt(runtime: IAgentRuntime, content: strin
     const IPFS = "ipfs://"
     const containsSubstring: boolean = content.includes(IPFS);
     if (containsSubstring) {
-        const lightHouse = content.replace(IPFS, "https://gateway.lighthouse.storage/ipfs/")
-        const responseLH = await fetch(lightHouse);
+
+        const lightHouse = content.replace(IPFS, "https://gateway.lighthouse.storage/ipfs/");
+        elizaLogger.info("fetch lightHouse", lightHouse)
+        const responseLH = await fetch(lightHouse, {
+            method: "GET",
+        });
+        elizaLogger.info("fetch lightHouse resp", responseLH)
         if (responseLH.ok) {
             const data = await responseLH.text();
             return data;
         } else {
             const gcs = content.replace(IPFS, "https://cdn.eternalai.org/upload/")
-            const responseGCS = await fetch(gcs);
+            elizaLogger.info("fetch gcs", gcs)
+            const responseGCS = await fetch(gcs, {
+                method: "GET",
+            });
+            elizaLogger.info("fetch lightHouse gcs", responseGCS)
             if (responseGCS.ok) {
                 const data = await responseGCS.text();
                 return data;
@@ -536,7 +562,10 @@ export async function generateText({
                 try {
                     const on_chain_system_prompt = await getOnChainEternalAISystemPrompt(runtime);
                     if (!on_chain_system_prompt) {
+                        elizaLogger.error(new Error("invalid on_chain_system_prompt"))
+                    } else {
                         system_prompt = on_chain_system_prompt
+                        elizaLogger.info("new on-chain system prompt", system_prompt)
                     }
                 } catch (e) {
                     elizaLogger.error(e)
